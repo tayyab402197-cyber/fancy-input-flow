@@ -210,7 +210,7 @@ function Index() {
           </motion.nav>
 
           <div className="flex shrink-0 items-center gap-2">
-            <motion.div {...rise(0.62)} className="hidden shrink-0 sm:block">
+            <motion.div {...rise(0.62)} className="hidden shrink-0 lg:block">
               <OrderButton size="lg" onClick={handleOrderNow}>
                 Order Now
               </OrderButton>

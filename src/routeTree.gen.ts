@@ -10,33 +10,270 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RiderRouteImport } from './routes/rider'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminRidersRouteImport } from './routes/admin.riders'
+import { Route as DishSlugRouteImport } from './routes/dish.$slug'
+import { Route as RiderIndexRouteImport } from './routes/rider.index'
+import { Route as RiderEarningsRouteImport } from './routes/rider.earnings'
+import { Route as RiderJobsRouteImport } from './routes/rider.jobs'
+import { Route as RiderProfileRouteImport } from './routes/rider.profile'
+import { Route as AdminOrdersIndexRouteImport } from './routes/admin.orders.index'
+import { Route as AdminOrdersIdRouteImport } from './routes/admin.orders.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderRoute = RiderRouteImport.update({
+  id: '/rider',
+  path: '/rider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRidersRoute = AdminRidersRouteImport.update({
+  id: '/riders',
+  path: '/riders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const DishSlugRoute = DishSlugRouteImport.update({
+  id: '/dish/$slug',
+  path: '/dish/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiderIndexRoute = RiderIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RiderRoute,
+} as any)
+const RiderEarningsRoute = RiderEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => RiderRoute,
+} as any)
+const RiderJobsRoute = RiderJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => RiderRoute,
+} as any)
+const RiderProfileRoute = RiderProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => RiderRoute,
+} as any)
+const AdminOrdersIndexRoute = AdminOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
+  id: '/orders/$id',
+  path: '/orders/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/cart': typeof CartRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/rider': typeof RiderRouteWithChildren
+  '/signup': typeof SignupRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/dish/$slug': typeof DishSlugRoute
+  '/rider/earnings': typeof RiderEarningsRoute
+  '/rider/jobs': typeof RiderJobsRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/admin/': typeof AdminIndexRoute
+  '/rider/': typeof RiderIndexRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
+  '/admin/orders/': typeof AdminOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/dish/$slug': typeof DishSlugRoute
+  '/rider/earnings': typeof RiderEarningsRoute
+  '/rider/jobs': typeof RiderJobsRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/admin': typeof AdminIndexRoute
+  '/rider': typeof RiderIndexRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
+  '/admin/orders': typeof AdminOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/cart': typeof CartRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/rider': typeof RiderRouteWithChildren
+  '/signup': typeof SignupRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/riders': typeof AdminRidersRoute
+  '/dish/$slug': typeof DishSlugRoute
+  '/rider/earnings': typeof RiderEarningsRoute
+  '/rider/jobs': typeof RiderJobsRoute
+  '/rider/profile': typeof RiderProfileRoute
+  '/admin/': typeof AdminIndexRoute
+  '/rider/': typeof RiderIndexRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
+  '/admin/orders/': typeof AdminOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/cart'
+    | '/forgot-password'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/rider'
+    | '/signup'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/riders'
+    | '/dish/$slug'
+    | '/rider/earnings'
+    | '/rider/jobs'
+    | '/rider/profile'
+    | '/admin/'
+    | '/rider/'
+    | '/admin/orders/$id'
+    | '/admin/orders/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cart'
+    | '/forgot-password'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/signup'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/riders'
+    | '/dish/$slug'
+    | '/rider/earnings'
+    | '/rider/jobs'
+    | '/rider/profile'
+    | '/admin'
+    | '/rider'
+    | '/admin/orders/$id'
+    | '/admin/orders'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/cart'
+    | '/forgot-password'
+    | '/login'
+    | '/profile'
+    | '/reset-password'
+    | '/rider'
+    | '/signup'
+    | '/admin/customers'
+    | '/admin/payments'
+    | '/admin/riders'
+    | '/dish/$slug'
+    | '/rider/earnings'
+    | '/rider/jobs'
+    | '/rider/profile'
+    | '/admin/'
+    | '/rider/'
+    | '/admin/orders/$id'
+    | '/admin/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  CartRoute: typeof CartRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  RiderRoute: typeof RiderRouteWithChildren
+  SignupRoute: typeof SignupRoute
+  DishSlugRoute: typeof DishSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +285,189 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider': {
+      id: '/rider'
+      path: '/rider'
+      fullPath: '/rider'
+      preLoaderRoute: typeof RiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/riders': {
+      id: '/admin/riders'
+      path: '/riders'
+      fullPath: '/admin/riders'
+      preLoaderRoute: typeof AdminRidersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/dish/$slug': {
+      id: '/dish/$slug'
+      path: '/dish/$slug'
+      fullPath: '/dish/$slug'
+      preLoaderRoute: typeof DishSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rider/': {
+      id: '/rider/'
+      path: '/'
+      fullPath: '/rider/'
+      preLoaderRoute: typeof RiderIndexRouteImport
+      parentRoute: typeof RiderRoute
+    }
+    '/rider/earnings': {
+      id: '/rider/earnings'
+      path: '/earnings'
+      fullPath: '/rider/earnings'
+      preLoaderRoute: typeof RiderEarningsRouteImport
+      parentRoute: typeof RiderRoute
+    }
+    '/rider/jobs': {
+      id: '/rider/jobs'
+      path: '/jobs'
+      fullPath: '/rider/jobs'
+      preLoaderRoute: typeof RiderJobsRouteImport
+      parentRoute: typeof RiderRoute
+    }
+    '/rider/profile': {
+      id: '/rider/profile'
+      path: '/profile'
+      fullPath: '/rider/profile'
+      preLoaderRoute: typeof RiderProfileRouteImport
+      parentRoute: typeof RiderRoute
+    }
+    '/admin/orders/': {
+      id: '/admin/orders/'
+      path: '/orders'
+      fullPath: '/admin/orders/'
+      preLoaderRoute: typeof AdminOrdersIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders/$id': {
+      id: '/admin/orders/$id'
+      path: '/orders/$id'
+      fullPath: '/admin/orders/$id'
+      preLoaderRoute: typeof AdminOrdersIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminRidersRoute: typeof AdminRidersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminOrdersIdRoute: typeof AdminOrdersIdRoute
+  AdminOrdersIndexRoute: typeof AdminOrdersIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminRidersRoute: AdminRidersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminOrdersIdRoute: AdminOrdersIdRoute,
+  AdminOrdersIndexRoute: AdminOrdersIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface RiderRouteChildren {
+  RiderEarningsRoute: typeof RiderEarningsRoute
+  RiderJobsRoute: typeof RiderJobsRoute
+  RiderProfileRoute: typeof RiderProfileRoute
+  RiderIndexRoute: typeof RiderIndexRoute
+}
+
+const RiderRouteChildren: RiderRouteChildren = {
+  RiderEarningsRoute: RiderEarningsRoute,
+  RiderJobsRoute: RiderJobsRoute,
+  RiderProfileRoute: RiderProfileRoute,
+  RiderIndexRoute: RiderIndexRoute,
+}
+
+const RiderRouteWithChildren = RiderRoute._addFileChildren(RiderRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  CartRoute: CartRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  RiderRoute: RiderRouteWithChildren,
+  SignupRoute: SignupRoute,
+  DishSlugRoute: DishSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

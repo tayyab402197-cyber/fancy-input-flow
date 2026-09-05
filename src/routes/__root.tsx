@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,6 +12,13 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { Toaster } from "@/components/ui/sonner";
+import { CursorRobot } from "@/components/kennedy/CursorRobot";
+import { CartDock } from "@/components/kennedy/CartDock";
+import { SoundProvider } from "@/components/kennedy/SoundProvider";
+import { SiteLoader } from "@/components/kennedy/SiteLoader";
+import { ConnectionBanner } from "@/components/ConnectionBanner";
+
 
 function NotFoundComponent() {
   return (
@@ -77,23 +85,42 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Kennedy — Spicy Pizza Specialist | Moon Grill Narowal" },
+      { name: "description", content: "Kennedy serves the spiciest pizza in Narowal plus authentic malai boti, seekh kebab and charcoal grills. Order fiery flavors crafted fresh." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Kennedy — Spicy Pizza Specialist | Moon Grill Narowal" },
+      { property: "og:description", content: "Kennedy serves the spiciest pizza in Narowal plus authentic malai boti, seekh kebab and charcoal grills. Order fiery flavors crafted fresh." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Kennedy — Spicy Pizza Specialist | Moon Grill Narowal" },
+      { name: "twitter:description", content: "Kennedy serves the spiciest pizza in Narowal plus authentic malai boti, seekh kebab and charcoal grills. Order fiery flavors crafted fresh." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d0045294ef88464b8f5807b5c1c21bca/id-preview-13d2f864--1b9194b0-74d5-47aa-a00d-4e5bd7ee5be0.lovable.app-1786259134967.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d0045294ef88464b8f5807b5c1c21bca/id-preview-13d2f864--1b9194b0-74d5-47aa-a00d-4e5bd7ee5be0.lovable.app-1786259134967.png" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Anton&family=Baloo+2:wght@600;700;800&family=Mouse+Memoirs&family=Nunito:wght@400;600;800&display=swap",
+      },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+    ],
+    scripts: [
+      {
+        // Runs before first paint: hide the curtain loader instantly for
+        // sessions that already saw it (CSS: html[data-kmg-loader-seen] .opening).
+        children:
+          "try{if(sessionStorage.getItem('kmg.loader.seen.v2'))document.documentElement.setAttribute('data-kmg-loader-seen','1')}catch(e){}",
+      },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -116,11 +143,43 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isConsole = pathname.startsWith("/admin") || pathname.startsWith("/rider");
+
+  // Redirect to /login whenever forceSignOut() fires (access token expired and refresh failed).
+  // This covers the case where the user is already on a page and the token silently expires.
+  useEffect(() => {
+    const PROTECTED = ["/admin", "/rider", "/profile", "/cart"];
+    const handleAuthChange = () => {
+      const stored = typeof localStorage !== "undefined" ? localStorage.getItem("kmg.auth.v1") : null;
+      const hasTokens = typeof localStorage !== "undefined" && localStorage.getItem("kmg.api.access");
+      if (!stored && !hasTokens) {
+        const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+        if (isProtected) {
+          router.navigate({ to: "/login", search: { next: pathname }, replace: true });
+        }
+      }
+    };
+    window.addEventListener("kmg-auth-change", handleAuthChange);
+    return () => window.removeEventListener("kmg-auth-change", handleAuthChange);
+  }, [pathname, router]);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ConnectionBanner />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      {!isConsole ? (
+        <>
+          <CursorRobot />
+          <CartDock />
+          <SoundProvider />
+        </>
+      ) : null}
+      {/* Staff consoles skip the theatre intro — they need the data instantly. */}
+      {!isConsole ? <SiteLoader /> : null}
+      <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
 }

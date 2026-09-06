@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, ShoppingCart, ArrowRight, Search } from "lucide-react";
+import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search } from "lucide-react";
 import { toast } from "sonner";
 import { DISHES, fetchDishes, type Dish } from "@/lib/menu";
 import { addToCart, useWishlist } from "@/lib/cart";

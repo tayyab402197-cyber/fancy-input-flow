@@ -99,12 +99,17 @@ function CartPage() {
       return;
     }
 
-    if (!form.name.trim() || !/^[0-9+\-\s]{10,}$/.test(form.phone) || !form.street.trim()) {
-      toast.error("Adhoori maloomat", {
-        description: "Naam, sahi phone number aur address zaroori hai.",
-      });
+    const problem = firstError(
+      validateName(form.name),
+      validatePkPhone(form.phone),
+      validateStreet(form.street),
+      validateCity(form.city),
+    );
+    if (problem) {
+      toast.error("Please check your details", { description: problem });
       return;
     }
+
     if (!coords) {
       toast.error("Location share karein", {
         description: "Order place karne se pehle apni live location allow karein.",

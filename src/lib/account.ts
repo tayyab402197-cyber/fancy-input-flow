@@ -191,6 +191,10 @@ export async function fetchOrders(_userId?: string): Promise<DbOrder[]> {
   }
 }
 
+/** Human-facing code of the most recently created order (for confirmations). */
+let _lastOrderCode: string | null = null;
+export const getLastOrderCode = () => _lastOrderCode;
+
 export async function createOrder(input: {
   userId?: string;
   orderCode?: string;
@@ -239,6 +243,7 @@ export async function createOrder(input: {
     };
 
     const res = await api.post<BackendOrder>(ORDERS.create, orderPayload);
+    _lastOrderCode = res.order_code ? String(res.order_code) : String(res.id);
     await fetchOrders();
     return String(res.id);
   }
@@ -261,6 +266,7 @@ export async function createOrder(input: {
     created_at: new Date().toISOString(),
   };
   write({ ...store, orders: [order, ...store.orders] });
+  _lastOrderCode = order.order_code;
   return order.id;
 }
 

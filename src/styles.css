@@ -3244,3 +3244,46 @@ img[loading="lazy"]:not([style]) {
   border-color: var(--color-flame, #d7381f) !important;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-flame, #d7381f) 18%, transparent);
 }
+
+/* ---------------------------------------------------------------
+ * Menu rail: compact phone cards + loading skeleton
+ * --------------------------------------------------------------- */
+@media (max-width: 639px) {
+  .glass-card__image img { height: 172px; }
+  .glass-card__price-area { padding: 12px 0 8px 16px; }
+  .glass-card__new-price { font-size: 22px; }
+  .glass-card__old-price { font-size: 11px; }
+  .glass-card__like-area { padding: 10px 14px 10px 16px; }
+  .glass-card__like { width: 40px; height: 40px; }
+  .glass-card__content { padding: 12px 16px 12px; }
+  .glass-card__name { font-size: 20px; }
+  .glass-card__subtitle { font-size: 12.5px; margin-bottom: 10px; }
+  .glass-card__stat { padding: 9px 6px; }
+  .glass-card__stat-value { font-size: 13px; }
+  .glass-card__cart,
+  .glass-card__shop { padding: 13px 10px; font-size: 13px; }
+}
+
+.menu-skeleton {
+  border-radius: 28px;
+  background: oklch(1 0 0 / 0.35);
+  border: 1px solid oklch(1 0 0 / 0.5);
+  overflow: hidden;
+}
+
+.menu-skeleton__block {
+  background: linear-gradient(
+    90deg,
+    oklch(0.9 0.02 60 / 0.5) 25%,
+    oklch(0.96 0.02 80 / 0.8) 37%,
+    oklch(0.9 0.02 60 / 0.5) 63%
+  );
+  background-size: 400% 100%;
+  animation: menu-skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes menu-skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}

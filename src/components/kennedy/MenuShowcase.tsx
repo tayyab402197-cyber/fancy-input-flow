@@ -20,6 +20,15 @@ export function MenuShowcase() {
   const navigate = useNavigate();
   const wishlist = useWishlist();
   const [active, setActive] = useState<string>(ALL);
+  const railRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollRail = (dir: 1 | -1) => {
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.85;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
 
   const { data: dishes = DISHES } = useQuery({
     queryKey: ["menu-dishes"],

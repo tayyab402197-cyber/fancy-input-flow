@@ -141,7 +141,7 @@ export function MenuShowcase() {
                 ease: [0.34, 1.3, 0.64, 1],
               }}
               whileHover={reduce ? undefined : { y: -12, scale: 1.02 }}
-              className="glass-card group"
+              className="glass-card group w-[80vw] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink"
               data-accent={dish.accent}
             >
               <div className="glass-card__top">

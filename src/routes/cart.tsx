@@ -14,6 +14,7 @@ import {
 } from "@/lib/cart";
 import { PAYMENTS, RIDERS, type Address, type PaymentMethod } from "@/lib/orders";
 import { createOrder, saveProfile } from "@/lib/account";
+import { firstError, normalizePkPhone, validateCity, validateName, validatePkPhone, validateStreet } from "@/lib/validation";
 
 
 export const Route = createFileRoute("/cart")({
@@ -99,12 +100,17 @@ function CartPage() {
       return;
     }
 
-    if (!form.name.trim() || !/^[0-9+\-\s]{10,}$/.test(form.phone) || !form.street.trim()) {
-      toast.error("Adhoori maloomat", {
-        description: "Naam, sahi phone number aur address zaroori hai.",
-      });
+    const problem = firstError(
+      validateName(form.name),
+      validatePkPhone(form.phone),
+      validateStreet(form.street),
+      validateCity(form.city),
+    );
+    if (problem) {
+      toast.error("Please check your details", { description: problem });
       return;
     }
+
     if (!coords) {
       toast.error("Location share karein", {
         description: "Order place karne se pehle apni live location allow karein.",
@@ -119,7 +125,7 @@ function CartPage() {
       const address = {
         label: form.label || "Home",
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        phone: normalizePkPhone(form.phone),
         street: form.street.trim(),
         area: form.area.trim() || "Central",
         city: form.city.trim() || "Narowal",

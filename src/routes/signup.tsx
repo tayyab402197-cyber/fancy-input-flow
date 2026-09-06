@@ -9,6 +9,7 @@ import { EMAIL_RE, pickLine, useChefVolt } from "@/hooks/use-chef-volt";
 import { ROLE_COPY, ROLE_HOME, signUp, type AccountRole } from "@/lib/auth";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
+import { firstError, normalizePkPhone, validateEmail, validateName, validatePassword, validatePkPhone } from "@/lib/validation";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -52,19 +53,19 @@ function SignupPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (volt.done || isSubmitting) return;
-    if (!form.name.trim()) return volt.complain("I still don't know your name, hungry stranger.");
-    if (!EMAIL_RE.test(form.email.trim())) return volt.complain("That email isn't a real delivery address.");
-    if (!form.password) return volt.complain("A password would help. Even a small one.");
-    if (form.password.length < 8)
-      return volt.complain("Passwords need at least 8 characters — keep your account safe.");
-    if (!/[a-zA-Z]/.test(form.password) || !/[0-9]/.test(form.password))
-      return volt.complain("Mix in at least one letter and one number.");
+    const problem = firstError(
+      validateName(form.name),
+      validateEmail(form.email),
+      validatePkPhone(form.phone),
+      validatePassword(form.password),
+    );
+    if (problem) return volt.complain(problem);
 
     setIsSubmitting(true);
     // Keep the pending animation on screen long enough to read.
     const minPending = new Promise((r) => setTimeout(r, 650));
     try {
-      const [account] = await Promise.all([signUp({ ...form, role }), minPending]);
+      const [account] = await Promise.all([signUp({ ...form, name: form.name.trim(), email: form.email.trim().toLowerCase(), phone: normalizePkPhone(form.phone), role }), minPending]);
 
       if (account.status === "pending_approval" || role === "rider" || role === "staff") {
         volt.celebrate(`Application sent, ${account.name.split(" ")[0]}! Team is reviewing.`);
@@ -234,7 +235,12 @@ function SignupPage() {
               value={form.phone}
               placeholder="03xx xxxxxxx"
               className="auth-field"
+              type="tel"
+              inputMode="tel"
+              maxLength={15}
+              aria-label="Pakistani mobile number"
               autoComplete="tel"
+
               onFocus={() => {
                 volt.setTurned(false);
                 volt.setMoodSafe("watching");

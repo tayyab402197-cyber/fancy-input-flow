@@ -146,6 +146,12 @@ function RootComponent() {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isConsole = pathname.startsWith("/admin") || pathname.startsWith("/rider");
+  // Auth screens must be instant — no theatre curtain in front of a login form.
+  const isAuth =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password");
 
   // Redirect to /login whenever forceSignOut() fires (access token expired and refresh failed).
   // This covers the case where the user is already on a page and the token silently expires.
@@ -178,7 +184,7 @@ function RootComponent() {
         </>
       ) : null}
       {/* Staff consoles skip the theatre intro — they need the data instantly. */}
-      {!isConsole ? <SiteLoader /> : null}
+      {!isConsole && !isAuth ? <SiteLoader /> : null}
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );

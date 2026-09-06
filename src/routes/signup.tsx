@@ -9,7 +9,7 @@ import { EMAIL_RE, pickLine, useChefVolt } from "@/hooks/use-chef-volt";
 import { ROLE_COPY, ROLE_HOME, signUp, type AccountRole } from "@/lib/auth";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
-import { firstError, normalizePkPhone, validateEmail, validateName, validatePassword, validatePkPhone } from "@/lib/validation";
+import { formatPkPhoneInput, normalizePkPhone, validateEmail, validateName, validatePassword, validatePkPhone } from "@/lib/validation";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -44,22 +44,34 @@ function SignupPage() {
   const [role, setRole] = useState<AccountRole>("customer");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [showPass, setShowPass] = useState(false);
+  const [touched, setTouched] = useState<Partial<Record<"name" | "phone" | "email" | "password", boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<{
     name: string;
     role: AccountRole;
   } | null>(null);
 
+  const errors = {
+    name: validateName(form.name).message,
+    phone: validatePkPhone(form.phone).message,
+    email: validateEmail(form.email).message,
+    password: validatePassword(form.password).message,
+  } as Partial<Record<"name" | "phone" | "email" | "password", string>>;
+  const firstProblem = errors.name || errors.phone || errors.email || errors.password || null;
+
+  const fieldError = (k: "name" | "phone" | "email" | "password") =>
+    touched[k] && errors[k] ? (
+      <span className="mt-1 block font-body text-[11px] font-semibold text-flame">{errors[k]}</span>
+    ) : null;
+  const invalid = (k: "name" | "phone" | "email" | "password") => Boolean(touched[k] && errors[k]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (volt.done || isSubmitting) return;
-    const problem = firstError(
-      validateName(form.name),
-      validateEmail(form.email),
-      validatePkPhone(form.phone),
-      validatePassword(form.password),
-    );
-    if (problem) return volt.complain(problem);
+    if (firstProblem) {
+      setTouched({ name: true, phone: true, email: true, password: true });
+      return volt.complain(firstProblem);
+    }
 
     setIsSubmitting(true);
     // Keep the pending animation on screen long enough to read.
@@ -155,12 +167,28 @@ function SignupPage() {
       title="Create account"
       subtitle="Choose your role — customer, staff or rider — and we build the matching dashboard."
       footer={
-        <>
-          Already have an account?{" "}
-          <Link to="/login" className="font-extrabold text-flame hover:underline">
-            Sign in
-          </Link>
-        </>
+        <div className="space-y-3">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="font-extrabold text-flame hover:underline">
+              Sign in
+            </Link>
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Link
+              to="/login"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-charcoal px-5 font-display text-[11px] font-extrabold tracking-[0.16em] text-cream uppercase transition-colors hover:bg-flame"
+            >
+              Go to sign in <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+            <Link
+              to="/"
+              className="flex min-h-[44px] items-center justify-center rounded-full border-2 border-charcoal/12 bg-white px-5 font-display text-[11px] font-extrabold tracking-[0.16em] text-charcoal/70 uppercase transition-colors hover:border-flame hover:text-flame"
+            >
+              Back to home
+            </Link>
+          </div>
+        </div>
       }
     >
       <form onSubmit={submit} className="space-y-5">
@@ -212,8 +240,10 @@ function SignupPage() {
             <input
               value={form.name}
               placeholder="Full name"
-              className="auth-field"
+              className={cn("auth-field", invalid("name") && "auth-field-invalid")}
               autoComplete="name"
+              aria-invalid={invalid("name")}
+              onBlur={() => setTouched((t) => ({ ...t, name: true }))}
               onFocus={() => {
                 volt.setTurned(false);
                 volt.setMoodSafe("watching");
@@ -228,18 +258,21 @@ function SignupPage() {
                 else if (v.length === 0) volt.say("Deleted. Already forgotten. Mostly.");
               }}
             />
+            {fieldError("name")}
           </label>
           <label className="auth-field-wrap block">
             <Phone className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-charcoal/40" />
             <input
               value={form.phone}
               placeholder="03xx xxxxxxx"
-              className="auth-field"
+              className={cn("auth-field", invalid("phone") && "auth-field-invalid")}
               type="tel"
               inputMode="tel"
               maxLength={15}
               aria-label="Pakistani mobile number"
               autoComplete="tel"
+              aria-invalid={invalid("phone")}
+              onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
 
               onFocus={() => {
                 volt.setTurned(false);
@@ -247,10 +280,12 @@ function SignupPage() {
                 volt.say("A number for the rider. He knocks twice.");
               }}
               onChange={(e) => {
-                setForm((f) => ({ ...f, phone: e.target.value }));
-                volt.follow(e.target.value);
+                const v = formatPkPhoneInput(e.target.value);
+                setForm((f) => ({ ...f, phone: v }));
+                volt.follow(v);
               }}
             />
+            {fieldError("phone")}
           </label>
         </div>
 
@@ -260,8 +295,10 @@ function SignupPage() {
             type="email"
             value={form.email}
             placeholder="you@email.com"
-            className="auth-field"
+            className={cn("auth-field", invalid("email") && "auth-field-invalid")}
             autoComplete="email"
+            aria-invalid={invalid("email")}
+            onBlur={() => setTouched((t) => ({ ...t, email: true }))}
             onFocus={() => {
               volt.setTurned(false);
               volt.setMoodSafe("watching");
@@ -280,6 +317,7 @@ function SignupPage() {
               }
             }}
           />
+          {fieldError("email")}
         </label>
 
         <div>
@@ -289,8 +327,9 @@ function SignupPage() {
               type={showPass ? "text" : "password"}
               value={form.password}
               placeholder="Create a password (min 8 characters)"
-              className="auth-field pr-12"
+              className={cn("auth-field pr-12", invalid("password") && "auth-field-invalid")}
               autoComplete="new-password"
+              aria-invalid={invalid("password")}
               onFocus={() => {
                 volt.setMoodSafe("shy");
                 volt.setTurned(true);
@@ -298,6 +337,7 @@ function SignupPage() {
                 volt.say("A secret? Say no more. *turns around*");
               }}
               onBlur={(e) => {
+                setTouched((t) => ({ ...t, password: true }));
                 if ((e.relatedTarget as HTMLElement | null)?.dataset?.["peek"]) return;
                 volt.setTurned(false);
               }}
@@ -319,6 +359,7 @@ function SignupPage() {
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </label>
+          {fieldError("password")}
           <VoltStrength volt={volt} />
         </div>
 

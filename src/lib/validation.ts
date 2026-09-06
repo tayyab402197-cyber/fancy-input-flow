@@ -94,3 +94,19 @@ export function firstError(...checks: Check[]): string | null {
   for (const c of checks) if (!c.ok) return c.message ?? "Please check this field.";
   return null;
 }
+
+/**
+ * As-you-type display formatting for a Pakistani mobile number.
+ * Keeps what the user typed but groups it: 0300 1234567 / +92 300 1234567.
+ */
+export function formatPkPhoneInput(raw: string): string {
+  const plus = (raw || "").trim().startsWith("+");
+  let d = (raw || "").replace(/\D/g, "");
+  if (plus || d.startsWith("92")) {
+    d = d.replace(/^92/, "").slice(0, 10);
+    if (!d) return "+92 ";
+    return `+92 ${d.slice(0, 3)}${d.length > 3 ? ` ${d.slice(3)}` : ""}`;
+  }
+  d = d.slice(0, 11);
+  return d.length > 4 ? `${d.slice(0, 4)} ${d.slice(4)}` : d;
+}

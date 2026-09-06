@@ -112,8 +112,23 @@ export function MenuShowcase() {
           </div>
         </div>
 
+        {/* mobile hint */}
+        <div className="mt-6 flex items-center gap-2 sm:hidden">
+          <motion.span
+            aria-hidden="true"
+            animate={reduce ? undefined : { x: [0, 6, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="font-display text-[11px] font-extrabold tracking-[0.18em] text-charcoal/60 uppercase"
+          >
+            Swipe to explore →
+          </motion.span>
+        </div>
+
         {/* cards */}
-        <div className="mt-8 grid gap-8 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          ref={railRef}
+          className="scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {visible.map((dish, i) => (
             <motion.article
               key={dish.slug}

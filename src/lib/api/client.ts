@@ -257,9 +257,12 @@ async function request<T>(
     clearSlow();
     if ((err as Error)?.name === "AbortError") throw err;
     // Never sign the user out for a transport failure.
+    signalReachability(false);
     throw new ApiError(0, OFFLINE_MESSAGE, {}, true);
   }
   clearSlow();
+  signalReachability(true);
+
 
   // ── Silent token refresh on 401 ─────────────────────────────────────────
   // Don't attempt a silent refresh for authentication endpoints themselves

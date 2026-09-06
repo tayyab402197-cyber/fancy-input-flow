@@ -241,6 +241,28 @@ export function MenuShowcase() {
             </motion.article>
           ))}
         </div>
+
+        {/* mobile arrows */}
+        <div className="mt-5 flex items-center justify-center gap-4 sm:hidden">
+          <motion.button
+            type="button"
+            aria-label="Previous dish"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollRail(-1)}
+            className="grid h-11 w-11 place-items-center rounded-full border border-charcoal/15 bg-cream text-charcoal shadow-[0_6px_14px_rgba(60,20,10,0.15)]"
+          >
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+          </motion.button>
+          <motion.button
+            type="button"
+            aria-label="Next dish"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollRail(1)}
+            className="grid h-11 w-11 place-items-center rounded-full border border-flame bg-flame text-cream shadow-[0_8px_18px_rgba(180,40,20,0.28)]"
+          >
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+          </motion.button>
+        </div>
       </div>
     </section>
   );

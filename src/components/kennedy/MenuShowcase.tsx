@@ -267,7 +267,7 @@ export function MenuShowcase() {
         </motion.div>
 
         {/* sticky category rail — the main way to browse on a phone */}
-        <div className="sticky top-0 z-40 -mx-5 mt-6 border-y border-charcoal/10 bg-cream/92 px-5 py-2.5 backdrop-blur-md sm:-mx-8 sm:px-8 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none">
+        <div className="relative z-0 -mx-5 mt-6 border-y border-charcoal/10 bg-cream px-5 py-2.5 sm:-mx-8 sm:px-8 lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0">
           <div
             className="scrollbar-none flex gap-2 overflow-x-auto"
             role="tablist"

@@ -31,7 +31,7 @@ import { TrackMap } from "./TrackMap";
 import { createOrder, updateOrderStatus } from "@/lib/account";
 import { getLocalUser } from "@/hooks/use-session";
 import { api, isBackendConfigured } from "@/lib/api/client";
-import { firstError, normalizePkPhone, validateCity, validateName, validatePkPhone, validateStreet } from "@/lib/validation";
+import { formatPkPhoneInput, normalizePkPhone, validateCity, validateName, validatePkPhone, validateStreet } from "@/lib/validation";
 
 export type OrderIntent = { dish: Dish; mode: "cart" | "order" } | null;
 
@@ -60,6 +60,8 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddr, setSelectedAddr] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [addrTouched, setAddrTouched] = useState<Record<string, boolean>>({});
+  const [savingAddr, setSavingAddr] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [payment, setPayment] = useState<PaymentMethod>("jazzcash");
   const [order, setOrder] = useState<Order | null>(null);
@@ -181,17 +183,21 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
     }, 250);
   };
 
+  const addrErrors: Record<string, string | undefined> = {
+    name: validateName(form.name).message,
+    phone: validatePkPhone(form.phone).message,
+    street: validateStreet(form.street).message,
+    city: validateCity(form.city).message,
+  };
+  const addrProblem = addrErrors["name"] || addrErrors["phone"] || addrErrors["street"] || addrErrors["city"] || null;
+
   const submitAddress = async () => {
-    const problem = firstError(
-      validateName(form.name),
-      validatePkPhone(form.phone),
-      validateStreet(form.street),
-      validateCity(form.city),
-    );
-    if (problem) {
-      toast.error("Please check your details", { description: problem });
+    if (addrProblem) {
+      setAddrTouched({ name: true, phone: true, street: true, city: true });
+      toast.error("Please check your details", { description: addrProblem });
       return;
     }
+    setSavingAddr(true);
     const addr: Address = {
       id: crypto.randomUUID(),
       ...form,
@@ -202,6 +208,8 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
     setAddresses(all);
     setSelectedAddr(String(addr.id));
     setAdding(false);
+    setSavingAddr(false);
+    setAddrTouched({});
     toast.success("Address saved", { description: `${addr.label} · ${addr.street}` });
   };
 
@@ -466,21 +474,39 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
                           ["notes", "Delivery notes (optional)"],
                         ] as const
                       ).map(([k, ph]) => (
-                        <input
-                          key={k}
-                          value={form[k]}
-                          onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-                          placeholder={ph}
-                          inputMode={k === "phone" ? "tel" : "text"}
-                          className="w-full rounded-2xl border-2 border-charcoal/12 bg-cream px-4 py-3 font-body text-sm text-charcoal outline-none placeholder:text-charcoal/40 focus:border-flame"
-                        />
+                        <div key={k}>
+                          <input
+                            value={form[k]}
+                            onChange={(e) =>
+                              setForm({
+                                ...form,
+                                [k]: k === "phone" ? formatPkPhoneInput(e.target.value) : e.target.value,
+                              })
+                            }
+                            onBlur={() => setAddrTouched((t) => ({ ...t, [k]: true }))}
+                            aria-invalid={Boolean(addrTouched[k] && addrErrors[k])}
+                            placeholder={ph}
+                            inputMode={k === "phone" ? "tel" : "text"}
+                            maxLength={k === "phone" ? 15 : undefined}
+                            className={`w-full rounded-2xl border-2 bg-cream px-4 py-3 font-body text-sm text-charcoal outline-none placeholder:text-charcoal/40 focus:border-flame ${
+                              addrTouched[k] && addrErrors[k] ? "border-flame" : "border-charcoal/12"
+                            }`}
+                          />
+                          {addrTouched[k] && addrErrors[k] && (
+                            <span className="mt-1 block font-body text-[11px] font-semibold text-flame">
+                              {addrErrors[k]}
+                            </span>
+                          )}
+                        </div>
                       ))}
                       <button
                         type="button"
                         onClick={submitAddress}
-                        className="w-full rounded-full bg-charcoal py-3 font-display text-xs font-extrabold uppercase tracking-[0.18em] text-cream"
+                        disabled={savingAddr}
+                        aria-busy={savingAddr}
+                        className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-charcoal py-3 font-display text-xs font-extrabold uppercase tracking-[0.18em] text-cream disabled:opacity-60"
                       >
-                        Save Address
+                        {savingAddr ? "Saving address…" : "Save Address"}
                       </button>
                     </div>
                   )}
@@ -488,11 +514,17 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
                   <button
                     type="button"
                     disabled={!activeAddress || adding}
+                    title={!activeAddress ? "Choose or add a delivery address first" : undefined}
                     onClick={() => setStep("payment")}
                     className="mt-5 w-full rounded-full bg-flame py-4 font-display text-sm font-extrabold uppercase tracking-[0.16em] text-cream shadow-[0_14px_30px_rgba(180,40,20,0.35)] disabled:opacity-40"
                   >
                     Continue to Payment
                   </button>
+                  {!activeAddress && !adding && (
+                    <p className="mt-2 text-center font-body text-[11px] font-semibold text-flame">
+                      Choose or add a delivery address first
+                    </p>
+                  )}
                 </>
               )}
 

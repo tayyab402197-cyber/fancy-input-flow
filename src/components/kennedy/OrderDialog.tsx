@@ -31,6 +31,7 @@ import { TrackMap } from "./TrackMap";
 import { createOrder, updateOrderStatus } from "@/lib/account";
 import { getLocalUser } from "@/hooks/use-session";
 import { api, isBackendConfigured } from "@/lib/api/client";
+import { firstError, normalizePkPhone, validateCity, validateName, validatePkPhone, validateStreet } from "@/lib/validation";
 
 export type OrderIntent = { dish: Dish; mode: "cart" | "order" } | null;
 
@@ -181,11 +182,22 @@ export function OrderDialog({ intent, onClose }: { intent: OrderIntent; onClose:
   };
 
   const submitAddress = async () => {
-    if (!form.name.trim() || !/^[0-9+\-\s]{10,}$/.test(form.phone) || !form.street.trim()) {
-      toast.error("Adhoori maloomat", { description: "Naam, sahi phone number aur address zaroori hai." });
+    const problem = firstError(
+      validateName(form.name),
+      validatePkPhone(form.phone),
+      validateStreet(form.street),
+      validateCity(form.city),
+    );
+    if (problem) {
+      toast.error("Please check your details", { description: problem });
       return;
     }
-    const addr: Address = { id: crypto.randomUUID(), ...form };
+    const addr: Address = {
+      id: crypto.randomUUID(),
+      ...form,
+      name: form.name.trim(),
+      phone: normalizePkPhone(form.phone),
+    };
     const all = await saveAddress(addr);
     setAddresses(all);
     setSelectedAddr(String(addr.id));

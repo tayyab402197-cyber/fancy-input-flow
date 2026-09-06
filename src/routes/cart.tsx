@@ -14,6 +14,7 @@ import {
 } from "@/lib/cart";
 import { PAYMENTS, RIDERS, type Address, type PaymentMethod } from "@/lib/orders";
 import { createOrder, saveProfile } from "@/lib/account";
+import { firstError, normalizePkPhone, validateCity, validateName, validatePkPhone, validateStreet } from "@/lib/validation";
 
 
 export const Route = createFileRoute("/cart")({
@@ -124,7 +125,7 @@ function CartPage() {
       const address = {
         label: form.label || "Home",
         name: form.name.trim(),
-        phone: form.phone.trim(),
+        phone: normalizePkPhone(form.phone),
         street: form.street.trim(),
         area: form.area.trim() || "Central",
         city: form.city.trim() || "Narowal",

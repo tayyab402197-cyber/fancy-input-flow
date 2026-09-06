@@ -128,8 +128,9 @@ export function MascotFooter() {
         </div>
 
         {/* bottom bar */}
-        <div className="relative z-20 mt-6 border-t border-cream/25 px-5 sm:mt-0 sm:px-0">
-          <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-6 py-7 text-cream sm:grid-cols-3">
+        <div className="relative z-20 mt-6 rounded-t-3xl border-t border-cream/30 bg-charcoal/35 px-5 backdrop-blur-md sm:mt-0 sm:rounded-none sm:bg-transparent sm:px-0 sm:backdrop-blur-none">
+          <div className="mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-6 py-7 text-cream drop-shadow-[0_1px_2px_rgba(40,8,8,0.55)] sm:drop-shadow-none sm:grid-cols-3">
+
             <div className="space-y-1.5">
               <p className="font-display text-xs font-extrabold tracking-[0.2em] uppercase">
                 Contact Us

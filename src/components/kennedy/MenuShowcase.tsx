@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, ShoppingCart, ArrowRight, Search } from "lucide-react";
+import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search } from "lucide-react";
 import { toast } from "sonner";
 import { DISHES, fetchDishes, type Dish } from "@/lib/menu";
 import { addToCart, useWishlist } from "@/lib/cart";
@@ -20,6 +20,15 @@ export function MenuShowcase() {
   const navigate = useNavigate();
   const wishlist = useWishlist();
   const [active, setActive] = useState<string>(ALL);
+  const railRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollRail = (dir: 1 | -1) => {
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.85;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
 
   const { data: dishes = DISHES } = useQuery({
     queryKey: ["menu-dishes"],
@@ -112,8 +121,23 @@ export function MenuShowcase() {
           </div>
         </div>
 
+        {/* mobile hint */}
+        <div className="mt-6 flex items-center gap-2 sm:hidden">
+          <motion.span
+            aria-hidden="true"
+            animate={reduce ? undefined : { x: [0, 6, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="font-display text-[11px] font-extrabold tracking-[0.18em] text-charcoal/60 uppercase"
+          >
+            Swipe to explore →
+          </motion.span>
+        </div>
+
         {/* cards */}
-        <div className="mt-8 grid gap-8 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          ref={railRef}
+          className="scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {visible.map((dish, i) => (
             <motion.article
               key={dish.slug}
@@ -126,7 +150,7 @@ export function MenuShowcase() {
                 ease: [0.34, 1.3, 0.64, 1],
               }}
               whileHover={reduce ? undefined : { y: -12, scale: 1.02 }}
-              className="glass-card group"
+              className="glass-card group w-[80vw] max-w-[320px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink"
               data-accent={dish.accent}
             >
               <div className="glass-card__top">
@@ -216,6 +240,28 @@ export function MenuShowcase() {
               </div>
             </motion.article>
           ))}
+        </div>
+
+        {/* mobile arrows */}
+        <div className="mt-5 flex items-center justify-center gap-4 sm:hidden">
+          <motion.button
+            type="button"
+            aria-label="Previous dish"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollRail(-1)}
+            className="grid h-11 w-11 place-items-center rounded-full border border-charcoal/15 bg-cream text-charcoal shadow-[0_6px_14px_rgba(60,20,10,0.15)]"
+          >
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+          </motion.button>
+          <motion.button
+            type="button"
+            aria-label="Next dish"
+            whileTap={{ scale: 0.9 }}
+            onClick={() => scrollRail(1)}
+            className="grid h-11 w-11 place-items-center rounded-full border border-flame bg-flame text-cream shadow-[0_8px_18px_rgba(180,40,20,0.28)]"
+          >
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
+          </motion.button>
         </div>
       </div>
     </section>

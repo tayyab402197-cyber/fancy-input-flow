@@ -1,14 +1,12 @@
-import { BadgePercent, Bike, Clock, Flame, Gift, Pizza, Sparkles, Star } from "lucide-react";
+import { Flame, Pizza, Sparkles, Star } from "lucide-react";
 
 type Item = { label: string; Icon: typeof Flame };
 
 const TOP: Item[] = [
-  { label: "Today's Bonus · Free Garlic Dip", Icon: Gift },
-  { label: "Buy 1 Large Pizza · Get 1 Half Price", Icon: Pizza },
-  { label: "Malai Boti Platter · Rs 200 Off", Icon: BadgePercent },
-  { label: "Free Delivery Inside Narowal", Icon: Bike },
-  { label: "Weekend Special · Free Soft Drink With Every Platter", Icon: Sparkles },
-  { label: "Order Before 8 PM · Delivered In 30 Minutes", Icon: Clock },
+  { label: "Today's Bonus · Free Garlic Dip", Icon: Flame },
+  { label: "Buy 1 Large Pizza Get 1 Half Price", Icon: Pizza },
+  { label: "Malai Boti Platter · Rs 200 Off", Icon: Sparkles },
+  { label: "Free Delivery Inside Narowal", Icon: Star },
 ];
 
 const BOTTOM: Item[] = [
@@ -16,8 +14,6 @@ const BOTTOM: Item[] = [
   { label: "Charcoal Grill Fresh After 6 PM", Icon: Flame },
   { label: "Family Deal · 2 Pizza + 1.5L Drink", Icon: Pizza },
   { label: "Spiciest Pizza in Town · Try It", Icon: Sparkles },
-  { label: "New · Cheese Volcano Crust Now Serving", Icon: Gift },
-  { label: "Live Order Tracking On Every Delivery", Icon: Bike },
 ];
 
 function Row({ items, reverse }: { items: Item[]; reverse?: boolean }) {

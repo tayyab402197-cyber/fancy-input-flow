@@ -3238,3 +3238,9 @@ img[loading="lazy"]:not([style]) {
     transform: scale(0.9);
   }
 }
+
+/* Inline invalid state for auth inputs */
+.auth-field-invalid {
+  border-color: var(--color-flame, #d7381f) !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-flame, #d7381f) 18%, transparent);
+}

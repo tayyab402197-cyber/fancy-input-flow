@@ -159,9 +159,9 @@ export function MascotFooter() {
                     key={i}
                     href="#"
                     aria-label="Kennedy social profile"
-                    className="rounded-md bg-cream/15 p-1.5 transition-transform duration-200 hover:scale-110"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cream/15 transition-transform duration-200 hover:scale-110"
                   >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </a>
                 ))}
               </div>

@@ -111,7 +111,16 @@ export function friendlyFieldMessage(fields: Record<string, string[]>): string {
 /** Cold-start hint: Railway free tier sleeps, so the first call can take 10-30s. */
 export const API_SLOW_EVENT = "kmg-api-slow";
 export const API_SLOW_DONE_EVENT = "kmg-api-slow-done";
+/** Server reachability: fired when a request fails at transport level / succeeds again. */
+export const API_OFFLINE_EVENT = "kmg-api-offline";
+export const API_ONLINE_EVENT = "kmg-api-online";
 const SLOW_AFTER_MS = 3500;
+
+function signalReachability(reachable: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(reachable ? API_ONLINE_EVENT : API_OFFLINE_EVENT));
+}
+
 
 type Options = { query?: Record<string, string | number | boolean | undefined>; signal?: AbortSignal };
 

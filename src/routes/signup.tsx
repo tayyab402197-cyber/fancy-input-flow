@@ -235,7 +235,12 @@ function SignupPage() {
               value={form.phone}
               placeholder="03xx xxxxxxx"
               className="auth-field"
+              type="tel"
+              inputMode="tel"
+              maxLength={15}
+              aria-label="Pakistani mobile number"
               autoComplete="tel"
+
               onFocus={() => {
                 volt.setTurned(false);
                 volt.setMoodSafe("watching");

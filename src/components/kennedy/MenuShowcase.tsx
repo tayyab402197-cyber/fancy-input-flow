@@ -2,9 +2,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search } from "lucide-react";
+import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search, Box } from "lucide-react";
 import { toast } from "sonner";
-import { DISHES, fetchDishes, type Dish } from "@/lib/menu";
+import { DISHES, fetchDishes, arViewUrl, type Dish } from "@/lib/menu";
 import { addToCart, useWishlist } from "@/lib/cart";
 import { GiftRibbon } from "./GiftRibbon";
 
@@ -34,6 +34,7 @@ const DishGlassCard = memo(function DishGlassCard({
   onAdd,
   onOrder,
 }: CardProps) {
+  const ar = arViewUrl(dish);
   return (
     <motion.article
       initial={reduce ? { opacity: 0 } : { opacity: 0, y: 40, scale: 0.95 }}

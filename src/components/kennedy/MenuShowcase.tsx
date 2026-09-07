@@ -340,7 +340,7 @@ export function MenuShowcase() {
         {/* cards */}
         <div
           ref={railRef}
-          className="scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+          className={`scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3 ${isLoading ? "max-sm:hidden" : ""}`}
         >
           {visible.map((dish, i) => (
             <DishGlassCard

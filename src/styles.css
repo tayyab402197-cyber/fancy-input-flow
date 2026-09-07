@@ -418,7 +418,7 @@
 
   .glass-card__price-area {
     flex: 1;
-    padding: 18px 0 12px 20px;
+    padding: 12px 0 8px 14px;
   }
 
   .glass-card__old-price {
@@ -442,7 +442,7 @@
   .glass-card__like-area {
     background: oklch(1 0 0 / 0.55);
     backdrop-filter: blur(12px);
-    padding: 14px 16px 14px 20px;
+    padding: 10px 12px 10px 14px;
     border-radius: 0 0 0 28px;
     display: flex;
     align-items: center;
@@ -495,7 +495,7 @@
 
   /* content */
   .glass-card__content {
-    padding: 18px 20px 16px;
+    padding: 12px 14px 12px;
     position: relative;
     z-index: 2;
   }
@@ -513,7 +513,7 @@
     font-family: var(--font-body);
     font-size: 13px;
     color: oklch(from var(--color-charcoal) l c h / 0.7);
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
 
   .glass-card__stats {
@@ -529,7 +529,7 @@
   .glass-card__stat {
     flex: 1;
     text-align: center;
-    padding: 13px 6px;
+    padding: 10px 6px;
     position: relative;
   }
 
@@ -560,6 +560,38 @@
     letter-spacing: 0.5px;
   }
 
+  /* AR link row */
+  .glass-card__ar-row {
+    position: relative;
+    z-index: 2;
+    padding: 0 14px 12px;
+  }
+
+  .glass-card__ar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 10px;
+    border-radius: 14px;
+    border: 1px solid oklch(0.585 0.238 27.5 / 0.35);
+    background: oklch(1 0 0 / 0.5);
+    color: var(--color-flame);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+  }
+
+  .glass-card__ar:hover {
+    background: var(--color-flame);
+    color: var(--color-cream);
+    box-shadow: 0 10px 22px -8px oklch(0.585 0.238 27.5 / 0.6);
+  }
+
   /* bottom actions */
   .glass-card__bottom {
     display: flex;
@@ -575,7 +607,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 18px 10px;
+    padding: 14px 10px;
     font-family: var(--font-display);
     font-size: 13px;
     font-weight: 700;

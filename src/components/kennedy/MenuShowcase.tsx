@@ -108,6 +108,21 @@ const DishGlassCard = memo(function DishGlassCard({
         </div>
       </div>
 
+      {ar && (
+        <div className="glass-card__ar-row">
+          <a
+            href={ar}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-card__ar"
+            aria-label={`View ${dish.name} in AR`}
+          >
+            <Box className="h-4 w-4" aria-hidden="true" />
+            View in AR
+          </a>
+        </div>
+      )}
+
       <div className="glass-card__bottom">
         <button type="button" className="glass-card__cart" onClick={() => onAdd(dish)}>
           <ShoppingCart className="h-4 w-4" aria-hidden="true" />

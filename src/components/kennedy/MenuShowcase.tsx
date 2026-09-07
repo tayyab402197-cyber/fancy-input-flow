@@ -2,9 +2,9 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search } from "lucide-react";
+import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Search, Box } from "lucide-react";
 import { toast } from "sonner";
-import { DISHES, fetchDishes, type Dish } from "@/lib/menu";
+import { DISHES, fetchDishes, arViewUrl, type Dish } from "@/lib/menu";
 import { addToCart, useWishlist } from "@/lib/cart";
 import { GiftRibbon } from "./GiftRibbon";
 
@@ -34,6 +34,7 @@ const DishGlassCard = memo(function DishGlassCard({
   onAdd,
   onOrder,
 }: CardProps) {
+  const ar = arViewUrl(dish);
   return (
     <motion.article
       initial={reduce ? { opacity: 0 } : { opacity: 0, y: 40, scale: 0.95 }}
@@ -107,6 +108,21 @@ const DishGlassCard = memo(function DishGlassCard({
           </div>
         </div>
       </div>
+
+      {ar && (
+        <div className="glass-card__ar-row">
+          <a
+            href={ar}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-card__ar"
+            aria-label={`View ${dish.name} in AR`}
+          >
+            <Box className="h-4 w-4" aria-hidden="true" />
+            View in AR
+          </a>
+        </div>
+      )}
 
       <div className="glass-card__bottom">
         <button type="button" className="glass-card__cart" onClick={() => onAdd(dish)}>
@@ -324,7 +340,7 @@ export function MenuShowcase() {
         {/* cards */}
         <div
           ref={railRef}
-          className="scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3"
+          className={`scrollbar-none -mx-5 mt-3 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] sm:mx-0 sm:mt-14 sm:grid sm:snap-none sm:gap-8 sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 lg:grid-cols-3 ${isLoading ? "max-sm:hidden" : ""}`}
         >
           {visible.map((dish, i) => (
             <DishGlassCard

@@ -30,7 +30,16 @@ export type Dish = {
   chef: string;
   categorySlug?: string;
   categoryName?: string;
+  /** Link to an AR / 3D recipe experience for this dish. */
+  arUrl?: string;
 };
+
+/** Global AR viewer link (set VITE_AR_VIEW_URL to your generated AR recipe link). */
+export const AR_VIEW_URL: string = import.meta.env["VITE_AR_VIEW_URL"] ?? "";
+
+export function arViewUrl(dish: Pick<Dish, "arUrl" | "slug">): string | undefined {
+  return dish.arUrl || AR_VIEW_URL || undefined;
+}
 
 export type BackendDish = {
   id: number;
@@ -277,7 +286,17 @@ export function normaliseBackendDish(b: BackendDish): Dish {
     chef: b.chef || "Chef Kennedy",
     categorySlug: b.category_slug,
     categoryName: b.category_name,
+    arUrl: arLinkFor(b),
   };
+}
+
+/** Reads an AR / 3D recipe link from the backend payload, else the global fallback. */
+function arLinkFor(b: BackendDish): string | undefined {
+  const raw = b as unknown as Record<string, unknown>;
+  const candidate = ["ar_url", "ar_link", "model_url", "recipe_ar_url"]
+    .map((k) => raw[k])
+    .find((v) => typeof v === "string" && v.length > 0) as string | undefined;
+  return candidate || AR_VIEW_URL || undefined;
 }
 
 export function cacheDishes(dishes: Dish[]) {

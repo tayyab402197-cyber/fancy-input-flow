@@ -3,9 +3,11 @@ import { Link } from "@tanstack/react-router";
 import { ChefHat, Flame, Pause, Play } from "lucide-react";
 
 import authChef from "@/assets/auth-chef-anime.png";
+import { AuthFlowRail } from "@/components/auth/flow-rail";
 import type { ChefVolt } from "@/hooks/use-chef-volt";
 import { readCalmOverride, setCalmOverride } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
+
 
 /**
  * Premium charcoal-grill showpiece for the auth screens: a framed signature
@@ -88,7 +90,7 @@ export function VoltScene({
       </a>
 
       <div ref={volt.sceneRef} className="relative mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1fr_1fr]">
-        <section className="order-2 flex flex-col items-center lg:order-1">
+        <section className="order-2 flex flex-col items-start lg:order-1">
           <Link
             to="/"
             className="inline-flex items-center gap-2 font-display text-[11px] font-extrabold tracking-[0.24em] text-flame-dark uppercase"
@@ -101,11 +103,9 @@ export function VoltScene({
             {volt.line}
           </div>
 
-          <AuthShowpiece volt={volt} />
-
-          <p className="mt-4 max-w-xs text-center text-[11px] leading-relaxed text-charcoal/60">
-            Signature seekh &amp; malai boti — grilled over open charcoal, sealed hot for your door.
-          </p>
+          <div className="mt-5 w-full">
+            <AuthFlowRail />
+          </div>
 
           <button
             type="button"
@@ -116,12 +116,13 @@ export function VoltScene({
               setCalmOverride(next);
               volt.say(next ? "Calm mode on. I'll stand very still." : "Motion back on. Let's dance.");
             }}
-            className="mt-3 inline-flex items-center gap-2 rounded-full border-2 border-charcoal/15 px-4 py-2 font-display text-[10px] font-extrabold tracking-[0.16em] text-charcoal/70 uppercase transition hover:border-flame hover:text-flame focus-visible:ring-2 focus-visible:ring-flame focus-visible:outline-none"
+            className="mt-4 inline-flex items-center gap-2 rounded-full border-2 border-charcoal/15 px-4 py-2 font-display text-[10px] font-extrabold tracking-[0.16em] text-charcoal/70 uppercase transition hover:border-flame hover:text-flame focus-visible:ring-2 focus-visible:ring-flame focus-visible:outline-none"
           >
             {calm ? <Pause className="h-3.5 w-3.5" aria-hidden="true" /> : <Play className="h-3.5 w-3.5" aria-hidden="true" />}
             {calm ? "Calm mode on" : "Calm mode off"}
           </button>
         </section>
+
 
         <section
           id="auth-form"

@@ -3319,3 +3319,76 @@ img[loading="lazy"]:not([style]) {
   0% { background-position: 100% 0; }
   100% { background-position: 0 0; }
 }
+
+/* ── Auth "how it works" flow rail ───────────────────────────────────────── */
+.flow-rail { width: 100%; max-width: 30rem; }
+.flow-rail-eyebrow {
+  font-family: var(--font-display, inherit);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--color-flame, #e2571f);
+}
+.flow-rail-title {
+  margin-top: 0.5rem;
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.6rem, 4.4vw, 2.4rem);
+  line-height: 1.02; font-weight: 900; letter-spacing: -0.01em;
+  text-transform: uppercase; color: var(--color-charcoal, #22201e);
+}
+.flow-rail-list {
+  position: relative; margin-top: 1.5rem;
+  display: flex; flex-direction: column; gap: 1.1rem;
+}
+.flow-rail-list::before {
+  content: ""; position: absolute; top: 1.6rem; bottom: 1.6rem; left: 2.35rem;
+  width: 2px; border-radius: 999px;
+  background: repeating-linear-gradient(to bottom,
+    color-mix(in oklab, var(--color-flame, #e2571f) 70%, transparent) 0 6px,
+    transparent 6px 13px);
+  animation: flow-rail-run 1.6s linear infinite;
+}
+@keyframes flow-rail-run { to { background-position-y: 13px; } }
+.flow-step { position: relative; display: flex; align-items: center; gap: 1rem; }
+.flow-step-media {
+  position: relative; flex: none;
+  width: 4.7rem; height: 4.7rem; border-radius: 1.35rem; overflow: hidden;
+  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.55);
+  outline: 2px solid color-mix(in oklab, var(--color-flame, #e2571f) 35%, transparent);
+  outline-offset: 3px;
+  transition: transform .35s cubic-bezier(.22,1,.36,1), outline-color .35s;
+}
+.flow-step:hover .flow-step-media { transform: scale(1.06) rotate(-1.5deg); outline-color: var(--color-flame, #e2571f); }
+.flow-step-media img { width: 100%; height: 100%; object-fit: cover; }
+.flow-step-num {
+  position: absolute; right: -0.35rem; bottom: -0.35rem;
+  display: grid; place-items: center; width: 1.5rem; height: 1.5rem;
+  border-radius: 999px; background: var(--color-flame, #e2571f); color: #fff;
+  font-size: 10px; font-weight: 900;
+  box-shadow: 0 0 0 3px color-mix(in oklab, #fff 70%, transparent);
+}
+.flow-step-body { display: block; min-width: 0; }
+.flow-step-kicker {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-flame, #e2571f) 85%, black);
+}
+.flow-step-title {
+  display: block; margin-top: 0.18rem;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem; font-weight: 800; line-height: 1.15;
+  color: var(--color-charcoal, #22201e);
+}
+.flow-step-copy {
+  display: block; margin-top: 0.2rem; font-size: 11.5px; line-height: 1.5;
+  color: color-mix(in oklab, var(--color-charcoal, #22201e) 68%, transparent);
+}
+.flow-rail-note {
+  margin-top: 1.25rem; padding-top: 0.9rem;
+  border-top: 1px dashed color-mix(in oklab, var(--color-charcoal, #22201e) 18%, transparent);
+  font-size: 11.5px; line-height: 1.55;
+  color: color-mix(in oklab, var(--color-charcoal, #22201e) 65%, transparent);
+}
+.volt-calm .flow-rail-list::before { animation: none; }
+@media (max-width: 640px) {
+  .flow-step-media { width: 3.9rem; height: 3.9rem; border-radius: 1.1rem; }
+  .flow-rail-list::before { left: 1.95rem; }
+}

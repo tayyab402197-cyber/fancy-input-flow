@@ -1,138 +1,148 @@
-# Kennedy Backend — Authoritative API Reference (v1, Sep 10 2026)
+# Kennedy Backend — Verified API Reference
 
-Source of truth: Django multi-tenant SaaS backend (Phases 1–8).
-Live schema: `GET /api/schema/` · Swagger UI: `GET /api/docs/`
-Base URL (prod): `https://overflowing-essence-production-6d94.up.railway.app/api`
+**Last verified:** 16 Sep 2026, by fetching `GET /api/schema/` (OpenAPI 3.0, 75 paths)
+from `https://overflowing-essence-production-6d94.up.railway.app` and probing routes with curl.
 
-> Frontend rule: this file is reference only. The single HTTP door stays
-> `src/lib/api/client.ts`; paths live in `src/lib/api/endpoints.ts`.
+This file replaces all earlier drafts. Everything in section 1 is **verified live**.
+Everything in section 2 is **specified by the owner's master guide but NOT deployed yet**
+at the configured URL — do not code against it without a feature flag.
 
----
-
-## 0. Conventions
-
-- **Multi-tenancy**: resolved by subdomain, custom domain, or `X-Tenant-Slug`
-  header (`tenants.middleware.TenantMiddleware`). Isolation enforced in the ORM
-  via `TenantAwareManager.for_tenant()`.
-- **Auth**: JWT `Authorization: Bearer <access>`. Tokens carry `tenant_slug`
-  and `role` claims. Refresh rotated + blacklisted (SimpleJWT).
-- **Concurrency**: `select_for_update()` pessimistic locks on tenant quotas
-  (max_branches, max_staff) and on stock deduction at order create.
-- **Auth response shape is unified** across login / phone-verify / staff login /
-  onboard-complete: root `access`, root `refresh`, `user{...}`, `user.tenant{id,name,slug}`.
-  Extra flags: `must_change_password` (login), `is_new_customer` (phone-verify).
+> Frontend rule: one HTTP door, `src/lib/api/client.ts`. Paths live in
+> `src/lib/api/endpoints.ts`. No component calls `fetch()` directly.
 
 ---
 
-## 1. Accounts & Auth (`accounts`)
+## 0. The single most important finding
 
-| Method | Path | Perms / throttle | Notes |
-|---|---|---|---|
-| POST | `/api/auth/login/` | AllowAny, 5/min | `{username,password}` → `access, refresh, must_change_password, user{...,tenant}` |
-| POST | `/api/auth/refresh/` | AllowAny | `{refresh}` → `{access, refresh}` (rotation) |
-| POST | `/api/auth/signup/` | AllowAny, 5/min | role forced `customer`; returns nested `tokens{access,refresh}` |
-| POST | `/api/auth/phone-otp/` | AllowAny, 5/min + max 3/10min per phone | `{phone}` → `{message}` |
-| POST | `/api/auth/phone-verify/` | AllowAny, 5 attempts lockout | `{phone,code}` → tokens + `is_new_customer`; creates the user silently |
-| GET/PATCH | `/api/profile/` | IsAuthenticated | `{id,username,email,role,full_name,phone,avatar_url}` |
-| POST | `/api/profile/change-password/` | IsAuthenticated | `{current_password,new_password}` |
-| GET/POST | `/api/addresses/` | IsAuthenticated | `{label,name,phone,street,area,city,notes,lat,lng,is_default}` |
-| GET | `/api/rider/profile/` | IsAuthenticated | `{duty_status,cash_in_hand,total_earned,verified}` |
-| POST | `/api/rider/duty-status/` | IsAuthenticated | `{duty_status:"online"\|"offline"}` |
-| POST | `/api/rider/location-share/` | IsAuthenticated, 60/min | `{lat,lng}` |
-| GET | `/api/rider/earnings/` | IsAuthenticated (rider) | **NEW** — `cash_in_hand,total_earned,base_salary,total_delivered_count,today_delivered_count,active_deliveries_count,total_delivery_fees,today_delivery_fees,recent_deliveries[10]` |
-| GET | `/api/admin/riders/` | IsAdminUserOrRole | rider list with cash/earnings/delivered_count |
-| POST | `/api/admin/staff/` | IsAdminUserOrRole | `{role,phone,full_name}` → `{id,username,role,temp_password}`; quota-locked |
+The deployed backend at the URL in `.env` is the **pre-multi-tenant build**.
+Phases 5–8 (tenants, branches, inventory, admin menu CRUD, coupons, billing,
+onboarding, phone+OTP, rider earnings) exist in the owner's codebase/spec but are
+**not live on this host**. Verified 404s:
 
-`Role.choices`: `customer, kitchen, rider, admin, owner, manager, cashier`.
+| Path from the master guide | Live status |
+|---|---|
+| `/api/auth/phone-otp/`, `/api/auth/phone-verify/` | not in schema |
+| `/api/branches/`, `/api/admin/branches/` | 404 |
+| `/api/inventory/` | 404 |
+| `/api/admin/menu/dishes/`, `/discounts/`, `upload-image` | 404 |
+| `/api/admin/staff/` | 404 |
+| `/api/billing/plans/`, `/api/billing/subscription/` | 404 |
+| `/api/onboard/initiate|verify|complete/` | 404 |
+| `/api/orders/apply-coupon/` **and** `/api/menu/apply-coupon/` | 404 (both) |
+| `/api/rider/earnings/` **and** `/api/auth/rider/earnings/` | 404 (both) |
+| `/api/auth/me/` | 404 — profile is `/api/profile/` |
+| `/api/health/` | not in schema |
 
----
-
-## 2. Menu (`menu`)
-
-| Method | Path | Perms | Notes |
-|---|---|---|---|
-| GET | `/api/menu/categories/` | AllowAny | categories with nested dishes + `sizes[]` |
-| GET | `/api/menu/dishes/` | AllowAny | `?category=<slug>&featured=true` |
-| GET | `/api/menu/dishes/<slug>/` | AllowAny | dish detail |
-| GET/POST | `/api/admin/menu/dishes/` | IsAdminRole + SubscriptionActive | `{category_id,name,slug,base_price,description,accent,is_available,sizes[]}` |
-| POST | `/api/admin/menu/dishes/<id>/upload-image/` | IsAdminRole + SubscriptionActive | multipart `image` → `{image_url}` (Cloudinary) |
-
-Dish payload: `id, name, slug, base_price (string decimal), image_url, is_available, sizes[{id,size,price}]`.
+Treat every Phase 5–8 screen as **blocked on a backend redeploy**, not on frontend work.
 
 ---
 
-## 3. Orders (`orders`)
+## 1. Live, verified surface (75 paths)
 
-| Method | Path | Perms | Notes |
-|---|---|---|---|
-| POST | `/api/orders/` | AllowAny | `{branch_id, items[{dish_id,size_id,qty}], customer_name, customer_phone, delivery_address, lat, lng, payment_method, coupon_code}` → `{id,order_code,status,subtotal,discount,delivery_fee,total,payment,created_at}` |
-| PATCH | `/api/orders/<id>/status/` | CanAdvanceStatus (per-role) | `confirmed → kitchen → packed → onway → delivered` |
-| POST | `/api/orders/<id>/assign-rider/` | CanAssignRider (admin/owner/manager/kitchen) | `{rider_id}` |
-| GET | `/api/orders/analytics/` | HasStaffPermission("analytics.view"), 60s Redis cache | `total_revenue, today_revenue, total_orders, today_orders, avg_order_value, top_dishes[]` |
+Routes are **dual-mounted**: most account routes answer at both `/api/<x>/` and
+`/api/auth/<x>/`. Both are real. Use the short form (`/api/rider/profile/`) —
+this settles the earlier `/auth/` prefix confusion: neither doc was wrong, the
+backend exposes both.
 
-Status vocabulary changed: backend uses **`kitchen`** and **`packed`**
-(frontend currently speaks `cooking`/`picking`). Needs a mapping layer.
-
----
-
-## 4. Tenants & Branches (`tenants`)
-
-| Method | Path | Perms |
+### Auth
+| Method | Path | Notes |
 |---|---|---|
-| GET | `/api/branches/` | AllowAny — public branch picker |
-| GET/POST | `/api/admin/branches/` | HasStaffPermission("branches.manage"), quota-locked |
-| GET/PATCH/DELETE | `/api/admin/branches/<id>/` | same (DELETE = deactivate) |
+| POST | `/api/auth/login/` | `{username, password}` → `{access, refresh, user}` (SimpleJWT) |
+| POST | `/api/auth/refresh/` | `{refresh}` → `{access}` |
+| POST | `/api/auth/signup/` | `{username, email, password, full_name, phone, requested_role}` |
+| POST | `/api/auth/logout/` | also `/api/logout/` |
+| POST | `/api/auth/password-reset/` · `/password-reset-confirm/` | live (earlier doc doubted these — they exist) |
+| POST | `/api/auth/send-otp/` · `/api/auth/verify-otp/` | **email** verification OTP for a signed-in user, NOT phone login |
+| GET/PATCH | `/api/profile/` | current user; `/api/auth/profile/` is the alias |
+| POST | `/api/profile/change-password/` | `{current_password, new_password}` |
+| GET/POST/PATCH/DELETE | `/api/addresses/`, `/api/addresses/{id}/`, `/{id}/set-default/` | saved addresses |
 
-Branch: `{id,name,slug,phone,address,city,operating_hours,is_active}`.
-Live DB today: 1 tenant (Moon Grill Narowal), 0 branches, 175/175 orders `branch=NULL` (nullable by design).
+### Menu
+`GET /api/menu/categories/` · `GET /api/menu/dishes/` · `GET /api/menu/dishes/{slug}/` · `GET /api/menu/book/`
+Read-only. **No admin menu CRUD, no image upload, no discounts endpoint live.**
 
----
+### Favourites
+`GET/POST /api/favourites/` · `DELETE /api/favourites/{id}/` · `POST /api/favourites/merge/`
 
-## 5. Billing (`billing`)
-
-| Method | Path | Perms |
+### Orders
+| Method | Path | Notes |
 |---|---|---|
-| GET | `/api/billing/plans/` | AllowAny — Starter 5000 / Growth 8000 / Pro 12000 PKR |
-| GET | `/api/billing/subscription/` | IsAuthenticated — `{status, plan, days_remaining}` |
-| POST | `/api/billing/invoices/<id>/submit-proof/` | billing.manage — `{jazzcash_transaction_id, payment_proof_url}` |
-| POST | `/api/billing/invoices/<id>/verify/` | platform superadmin — `{action, admin_notes}` |
+| GET/POST | `/api/orders/` | list own orders / create |
+| GET | `/api/orders/all/` | staff feed |
+| GET | `/api/orders/analytics/` | 401 without staff token; **field names unconfirmed — parse defensively** |
+| GET | `/api/orders/customers/` · `/api/orders/payments/` | staff |
+| GET | `/api/orders/rider-jobs/` · `/api/orders/active-rider/` | |
+| PATCH | `/api/orders/{id}/status/` | status advance |
+| PATCH | `/api/orders/{id}/controls/` | priority, ETA, internal notes |
+| POST | `/api/orders/{id}/assign-rider/` · `/reject/` · `/rate/` · `/verify-payment/` | |
+| PATCH | `/api/orders/{id}/payment-status/` | |
+| GET/POST | `/api/orders/{id}/rider-location/` | |
+| DELETE | `/api/orders/{id}/` | admin hard delete |
+| POST/GET | `/api/orders/voice-order/` · `/voice-status/` | ElevenLabs agent |
 
-Plan features flags: `whatsapp_bot, analytics(basic|advanced|enterprise), inventory, priority_support, custom_branding`; quotas `max_branches, max_staff`.
-Hourly expiry job guarded by a Redis `SETNX` distributed lock (safe under multiple Daphne workers).
+**Order status vocabulary (authoritative):**
+`pending → confirmed → kitchen → packed → onway → delivered` (`cancelled` anywhere).
+The frontend still says `cooking`/`picking` in places — that mapping is still owed.
 
----
+**Order create body — live build:** `{items[{dish_slug|dish_id, size, qty}], payment, address{...}}`.
+The guide's `{branch_id, items[{dish_id, size_id, qty}], coupon_code}` shape is the
+**future** contract; sending it today will be ignored or 400.
 
-## 6. Onboarding (`onboarding`)
+### Riders (both prefixes live)
+`GET/PATCH /api/rider/profile/` · `POST /api/rider/duty-status/` (always POST) · `POST /api/rider/location-share/`
+**`/api/rider/earnings/` is NOT live** (404 on both prefixes).
 
-`POST /api/onboard/initiate/` `{phone}` → WhatsApp code
-`POST /api/onboard/verify/` `{phone,code}` → `{verification_token}`
-`POST /api/onboard/complete/` `{verification_token,restaurant_name,owner_name,owner_password}`
-→ root `access`/`refresh` + `tenant` + `branch` + `user` (role `owner`).
+### Admin / riders fleet
+`GET/POST /api/admin/riders/` · `/{user_id}/approve|reject|verify|fleet-verify|settle-cash/` · `GET /api/admin/pending-approvals/`
 
----
-
-## 7. Platform
-
-`GET /api/health/` — db/cache/channels health + subscription metrics.
-`GET /api/schema/` — OpenAPI 3.0 (81.9 KB) · `GET /api/docs/` — Swagger UI.
-
----
-
-## 8. Permission matrix (summary)
-
-| Role | Can | Cannot |
-|---|---|---|
-| owner | everything tenant-scoped incl. billing, staff, branches, menu, inventory, discounts, analytics | platform invoice verify, cross-tenant |
-| admin | same as owner operationally | platform invoice verify, cross-tenant |
-| manager | branches, menu view/edit, discounts, orders (view/advance/assign), payments verify, inventory, analytics | staff.manage, billing.manage |
-| cashier | orders view/create/advance, payments view/verify, menu view, customers view | menu edit, discounts, branches, inventory edit, analytics, billing, rider assign |
-| kitchen | orders view + advance `confirmed→kitchen→packed`, inventory view, menu view | prices, discounts, payments, analytics, billing, branch/staff mgmt |
-| rider | jobs, earnings, duty-status, location-share, advance `packed→onway→delivered` | admin dashboards, analytics, billing, inventory, menu, customer records |
-| customer | menu, order create/view own/rate, addresses, favourites | all staff/admin operations |
+### Voice agent tools
+`/api/elevenlabs/signed-url/`, `/tools/menu/`, `/tools/my-orders/`, `/tools/order-status/`, `/tools/place-order/`
 
 ---
 
-## 9. Open items owned by backend/infra
+## 2. Specified but not deployed (owner's master guide)
 
-- `CLOUDINARY_URL` must be set on Railway or uploaded dish images are lost on redeploy.
-- WebSockets (Phase 6) specced but not wired — frontend is still HTTP polling.
+Code these only behind a capability check (404 → hide the feature).
+
+- **Multi-tenancy:** `X-Tenant-Slug` header on every request, slug from a global
+  context (`VITE_DEFAULT_TENANT_SLUG=moon-grill-narowal` in dev, subdomain in prod).
+  Harmless to send now — the live build ignores unknown headers.
+- **Roles (7):** `customer, kitchen, rider, admin, owner, manager, cashier`.
+  The live build only issues `customer, kitchen, rider, admin`.
+- **`must_change_password: true`** in the login response → force `/change-password`.
+- **Phone+OTP customers:** `POST /api/auth/phone-otp/ {phone}` →
+  `POST /api/auth/phone-verify/ {phone, code}` → tokens + `is_new_customer`.
+- **Onboarding wizard:** `/api/onboard/initiate → verify → complete`.
+- **Branches:** `GET /api/branches/` (public picker), `GET/POST/PATCH /api/admin/branches/`.
+- **Dish sizes:** `sizes:[{id, size, price}]`, orders carry `size_id`.
+- **Coupons:** apply-coupon preview endpoint — **path disputed**
+  (`/api/orders/apply-coupon/` per guide vs `/api/menu/apply-coupon/` per earlier note);
+  neither exists yet, so try one and fall back to the other.
+- **Inventory:** `GET /api/inventory/`, `POST /api/inventory/{id}/adjust/`,
+  low-stock when `current_stock <= reorder_threshold`.
+- **Admin menu:** dish/category CRUD, `POST .../dishes/{id}/upload-image/` (multipart, Cloudinary),
+  `/api/admin/menu/discounts/`.
+- **Staff:** `POST /api/admin/staff/ {role, phone, full_name}` → returns a one-time `temp_password`.
+- **Billing:** `/api/billing/plans/`, `/api/billing/subscription/`,
+  `/api/billing/invoices/{id}/submit-proof/`.
+- **Money:** prices arrive as decimal **strings** (`"450.00"`). Parse once at the boundary.
+- **Prices are server-authoritative** — the backend recalculates `unit_price`;
+  never show the cart total as the final bill, read it from the order response.
+
+---
+
+## 3. Explicitly UNCONFIRMED — code defensively
+
+| Thing | How to handle |
+|---|---|
+| Analytics field names | `data.avg_order_value ?? data.average_order_value ?? 0` |
+| WebSockets / realtime | **Not confirmed to exist.** Poll only. No WS code. |
+| Coupon endpoint path | try both paths, fall back silently |
+| `total` vs `grand_total` | the field is `total` |
+| Cloudinary on Railway | uploads are lost on redeploy unless `CLOUDINARY_URL` is set (infra owner's job) |
+
+## 4. Polling intervals (until realtime is confirmed)
+
+Customer tracking 3–5 s · admin order feed 10 s · rider job board 10–15 s ·
+rider GPS share 10–15 s while online. Wrap all of them in one
+`useLiveResource(key, fetcher, interval)` hook so a future socket swap is one change.

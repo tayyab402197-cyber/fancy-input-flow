@@ -1,51 +1,48 @@
-# Live API Test Results — Kennedy Backend (Sep 10 2026)
+# Live Backend Verification — 16 Sep 2026
 
-Source: user-run live smoke test against
-`https://overflowing-essence-production-6d94.up.railway.app/api`
+Method: downloaded `GET /api/schema/` (OpenAPI 3.0, 75 paths) and probed individual
+routes with curl against
+`https://overflowing-essence-production-6d94.up.railway.app`.
 
-**Total: 25 · PASS: 25 · FAIL: 0**
+## Result
 
-| Endpoint | Status | Result |
-|---|---|---|
-| GET `/api/health/` | 200 | PASS |
-| GET `/api/docs/` (html) | 200 | PASS |
-| GET `/api/schema/` | 200 | PASS |
-| POST `/api/auth/login/` (admin) | 200 | PASS |
-| POST `/api/auth/login/` (rider_hamza) | 200 | PASS |
-| GET `/api/auth/me/` | 200 | PASS |
-| GET `/api/billing/plans/` | 200 | PASS |
-| GET `/api/branches/` | 200 | PASS |
-| GET `/api/menu/dishes/` | 200 | PASS |
-| GET `/api/menu/categories/` | 200 | PASS |
-| GET `/api/menu/book/` | 200 | PASS |
-| POST `/api/orders/` (multi-item, authenticated) | 201 | PASS |
-| POST `/api/orders/` empty items → 400 | 400 | PASS |
-| PATCH `/api/orders/221/status/` → `kitchen` | 200 | PASS |
-| GET `/api/orders/` | 200 | PASS |
-| POST `/api/orders/voice-order/` (voice secret) | 201 | PASS |
-| POST `/api/auth/phone-otp/` | 200 | PASS |
-| GET `/api/favourites/` | 200 | PASS |
-| GET `/api/inventory/` | 200 | PASS |
-| GET `/api/admin/riders/` | 200 | PASS |
-| GET `/api/admin/branches/` | 200 | PASS |
-| POST `/api/menu/apply-coupon/` invalid → 400/404 | 400 | PASS |
-| GET `/api/auth/rider/profile/` | 200 | PASS |
-| POST `/api/auth/rider/duty-status/` | 200 | PASS |
-| GET `/api/auth/rider/earnings/` | 200 | PASS |
+The deployed build is the **pre-multi-tenant backend**. It is NOT the
+Phase 1–8 SaaS backend described in the owner's audit and master guide.
 
-## Corrections to `docs/BACKEND_API_REFERENCE.md`
+### Confirmed reachable (route exists)
 
-This live run supersedes earlier path guesses. Confirmed real paths:
+Auth/login/refresh/signup/logout, password reset (+confirm), email send-otp/verify-otp,
+`/api/profile/` (+`/api/auth/profile/`), change-password, addresses (+set-default),
+menu categories/dishes/dish-detail/book, favourites (+merge), orders list/create/all/
+analytics/customers/payments/rider-jobs/active-rider, order status/controls/assign-rider/
+reject/rate/verify-payment/payment-status/rider-location/delete, voice-order + voice-status,
+rider profile/duty-status/location-share (at **both** `/api/rider/*` and `/api/auth/rider/*`),
+admin riders + approve/reject/verify/fleet-verify/settle-cash, pending-approvals,
+ElevenLabs tool endpoints.
 
-- Profile/me is `/api/auth/me/` (earlier doc used `/api/profile/`).
-- Rider routes are namespaced under auth:
-  `/api/auth/rider/profile/`, `/api/auth/rider/duty-status/`,
-  `/api/auth/rider/earnings/` — **not** `/api/rider/*`.
-- Coupons: `POST /api/menu/apply-coupon/` (returns 400 on invalid code).
-- Extra live endpoints not in the earlier table:
-  `GET /api/menu/book/`, `GET /api/favourites/`, `GET /api/inventory/`,
-  `GET /api/orders/` (list), `POST /api/orders/voice-order/` (shared voice secret).
-- Order status vocabulary confirmed: PATCH to `kitchen` succeeds, so the
-  frontend `cooking`/`picking` wording still needs the mapping layer (plan A1).
-- `POST /api/orders/` with empty `items` correctly returns 400 — checkout must
-  guard against sending an empty cart.
+### Confirmed missing (404)
+
+`/api/auth/me/`, `/api/health/`, `/api/branches/`, `/api/admin/branches/`,
+`/api/inventory/`, `/api/admin/staff/`, `/api/admin/menu/dishes/`,
+`/api/billing/plans/`, `/api/billing/subscription/`, `/api/onboard/*`,
+`/api/rider/earnings/`, `/api/auth/rider/earnings/`,
+`/api/orders/apply-coupon/`, `/api/menu/apply-coupon/`,
+`/api/auth/phone-otp/`, `/api/auth/phone-verify/`.
+
+## Corrections to what was written in earlier docs
+
+1. **Wrong:** "profile is `/api/auth/me/`". It is `/api/profile/` (alias `/api/auth/profile/`).
+2. **Wrong:** "rider routes are only under `/api/auth/rider/*`". Both prefixes are
+   mounted; use the short `/api/rider/*`.
+3. **Wrong:** "`POST /api/menu/apply-coupon/` returns 400 on invalid code" — that
+   path does not exist here (404). Coupons are not deployed.
+4. **Wrong:** "`/api/auth/rider/earnings/` passes 200" — 404 today. The rider
+   earnings screen still has no backend.
+5. **Wrong/premature:** branches, inventory, billing, onboarding, admin menu and
+   `/api/health/` were listed as live. None respond on this host.
+6. **Still correct:** order status vocabulary is
+   `pending → confirmed → kitchen → packed → onway → delivered`, and empty `items`
+   on order create is rejected.
+
+The earlier "25/25 PASS" smoke test was presumably run against a local Docker
+build, not this Railway deployment.
